@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Payment Page</title>
+    <script src="modernizr-payment.js"></script>
+</head>
+<body>
+
+    <!-- Product Listing -->
+    <h2>Product Name</h2>
+    <p>Product description goes here. Price: $XX.XX</p>
+
+    <hr>
+
+    <!-- Comment Section -->
+    <h3>Comments</h3>
+    <div id="commentsSection">
+        <p>Loading comments...</p>
+    </div>
+
+    <h4>Add a Comment</h4>
+    <input type="text" id="commentInput" placeholder="Write a comment">
+    <button id="submitComment">Post Comment</button>
+
+    <hr>
+
+    <!-- Payment Form -->
+    <h3>Payment Details</h3>
+    <form id="paymentForm" onsubmit="event.preventDefault();">
+        <label for="cc">Credit Card Number:</label>
+        <input type="text" id="cc" name="cc">
+        <br>
+        <label for="cvv">CVV:</label>
+        <input type="text" id="cvv" name="cvv">
+        <br>
+        <input type="submit" value="Pay Now">
+    </form>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqpLV6uXiyTvSNTXO1Yj1e2e9IXGtzBGQ",
+            authDomain: "secret-fedfa.firebaseapp.com",
+            projectId: "secret-fedfa",
+            storageBucket: "secret-fedfa.firebasestorage.app",
+            messagingSenderId: "1036585755690",
+            appId: "1:1036585755690:web:95296469817b84d7de4f53"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Reference Firestore Collection
+        const commentsRef = collection(db, "comments");
+
+        // Fetch & Display Comments
+        async function loadComments() {
+            const querySnapshot = await getDocs(commentsRef);
+            let commentsHTML = "";
+            querySnapshot.forEach((doc) => {
+                const comment = doc.data().comment;
+                commentsHTML += `<p>${comment}</p>`;
+            });
+            document.getElementById("commentsSection").innerHTML = commentsHTML || "<p>No comments yet.</p>";
+        }
+
+        loadComments(); // Load comments when the page loads
+
+        // Post a Comment
+        document.getElementById("submitComment").addEventListener("click", async function() {
+            const commentText = document.getElementById("commentInput").value;
+            if (commentText.trim() === "") return;
+
+            await addDoc(commentsRef, { comment: commentText });
+            document.getElementById("commentInput").value = ""; // Clear input
+            loadComments(); // Refresh comments
+        });
+    </script>
+
+</body>
+</html>
